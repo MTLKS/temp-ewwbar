@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ $(playerctl --player=spotify status) == "Playing" ]; then
+  ICON='󰐊'
+elif [ $(playerctl --player=spotify status) == "Paused" ]; then
+  ICON='󰏤'
+fi
+
+FORMAT="󰎈 {{ title }} - 󰠃 {{ artist }} | $ICON {{ duration(position) }} / {{ duration(mpris:length) }}"
+if [ $(playerctl --player=spotify status) == "Playing" ] || [ $(playerctl --player=spotify status) == "Paused" ]; then
+  SONG=$(playerctl --player=spotify metadata --format "$FORMAT")
+  echo $SONG
+else
+  echo "󰎊 No music playing"
+fi

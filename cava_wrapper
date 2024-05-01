@@ -1,0 +1,15 @@
+#!/bin/sh
+
+while true
+do
+  read line
+  [ -z "$line" ] && exit 0
+  IFS=';' read -r -a array <<< "$line"
+  block=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+  str=""
+  for element in "${array[@]}"
+  do
+    str+="${block[$(($element))]}"
+  done
+  echo $str
+done

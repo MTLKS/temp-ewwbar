@@ -1,0 +1,100 @@
+(defwidget bar []
+  (centerbox
+    :orientation "h"
+    (workspaces)
+    (music)
+    (right)
+  )
+)
+
+(defwidget workspaces []
+  (literal
+    :content workspaces_output
+  )
+)
+
+(deflisten workspaces_output :initial ""
+  "$HOME/.config/eww/scripts/workspace_listener"
+)
+
+(defwidget music []
+  (box
+    :space-evenly false 
+    (box
+      :class "music block"
+      :halign "center"
+      {music != "" ? "${music}" : ""}
+    )
+    (box
+      :class "cava-out block"
+      :halign "center"
+      {cava_out != "" ? "󰋋 ${cava_out}" : ""}
+    )
+    (box
+      :class "cava-in block"
+      :halign "center"
+      {cava_in != "" ? "󰍬 ${cava_in}" : "󰍬"}
+    )
+  )
+)
+
+(deflisten cava_out :initial "▁▁▁▁▁▁▁"
+  "cava -p ~/.config/cava/output_eww.config | ~/.config/eww/cava_wrapper"
+)
+
+(defpoll music :interval "1s"
+  "./scripts/music"
+)
+
+(deflisten cava_in :initial "▁▁▁▁▁▁▁"
+  "cava -p ~/.config/cava/input_eww.config | ~/.config/eww/cava_wrapper"
+)
+
+(defwidget right []
+  (box
+    :class "datetime"
+    :orientation "h"
+    :space-evenly false
+    :halign "end"
+    (box
+      :class "day block"
+      {"󰧓 " + dayofweek}
+    )
+    (box
+      :class "date block"
+      {date}
+    )
+    (box
+      :class "time block"
+      {time}
+    )
+  )
+)
+
+(defpoll dayofweek :interval "1s"
+  "./scripts/dayofweek"
+)
+
+(defpoll date :interval "1s"
+  "date '+󰸗 %-m月%-d日'"
+)
+
+(defpoll time :interval "1s"
+  "date '+󰥔 %H:%M:%S'"
+)
+
+(defwindow bar
+  :monitor 1
+  :geometry
+    (geometry
+      :x "0%"
+      :y "5px"
+      :width "98%"
+      :height "30px"
+      :anchor "top center"
+    )
+  :stacking "fg"
+  :exclusive false
+  :focusable false
+  (bar)
+)

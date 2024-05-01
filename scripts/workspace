@@ -1,0 +1,52 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i python3 -p python3
+
+import sys, json, subprocess
+# print(json.load(sys.stdin)[0]['name'])
+obj = {}
+
+monitors_output = subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True)
+monitors_json = json.loads(monitors_output.stdout)
+for monitor in monitors_json:
+  obj[monitor['id']] = {}
+  obj[monitor['id']]['active'] = monitor['activeWorkspace']['id']
+  obj[monitor['id']]['others'] = []
+
+workspaces_output = subprocess.run(['hyprctl', '-j', 'workspaces'], capture_output=True, text=True)
+workspaces_json = json.loads(workspaces_output.stdout)
+
+for workspace in workspaces_json:
+  obj[workspace['monitorID']]['others'].append(workspace['id'])
+
+for monitor in obj:
+  obj[monitor]['others'].sort()
+
+workspace_template = "(button :class \"{class_name}\" :onclick \"hyprctl dispatch focusworkspaceoncurrentmonitor {workspace_id}\" :onrightclick \"hyprctl dispatch moveworkspacetomonitor {workspace_id} {monitor_id}\" \"{symbol}\" )"
+
+monitor_template = "(box :class \"workspaces block\" :orientation \"h\" :halign \"start\" :space-evenly \"false\" :height 30 {{\"󰍹 {monitor_id} \"}} {workspaces} ) "
+
+symbols = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+
+output = ""
+for monitor in obj:
+  workspace_output = ""
+
+  for workspace in obj[monitor]['others']:
+    
+    if workspace == obj[monitor]['active']:
+      class_name='active button'
+    else:
+      class_name='button'
+
+    if monitor == 1:
+      other_monitor = 0
+    else:
+      other_monitor = 1
+
+    workspace_output += workspace_template.format(class_name=class_name, workspace_id=workspace, monitor_id=other_monitor, symbol=symbols[workspace - 1])
+
+  output += monitor_template.format(monitor_id=monitor, workspaces=workspace_output)
+
+wrapper = "(box :class \"monitors\" :orientation \"h\" :space-evenly false :halign \"start\" {output} )"
+
+print(wrapper.format(output=output))
